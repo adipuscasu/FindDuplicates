@@ -31,7 +31,7 @@ This approach avoids relying on file names or timestamps, using actual content c
 
 ## 📥 Requirements
 
-- **.NET 6.0 or later** (or appropriate .NET SDK matching project)  
+- **.NET 10.0 or later** (or appropriate .NET SDK matching project)  
 - Windows / macOS / Linux — any environment that supports .NET
 
 ---
@@ -46,3 +46,13 @@ Clone the repo and build:
 git clone https://github.com/adipuscasu/FindDuplicates.git
 cd FindDuplicates
 dotnet build
+
+### 2. Run
+
+Change to the build output directory and run the executable with the desired command:
+
+```bash
+cd bin/Debug/net10.0 
+.\FindDuplicates.exe find "C:\Images" # Scan for duplicates in C:\Images
+.\FindDuplicates.exe remove "C:\Images" # Scan and remove duplicates in C:\Images
+```

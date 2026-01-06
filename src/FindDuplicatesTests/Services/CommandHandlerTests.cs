@@ -4,6 +4,7 @@ using System.Linq;
 using Xunit;
 using FindDuplicates.Services;
 using Microsoft.Extensions.Logging;
+using FindDuplicates.Tests.Helpers;
 
 namespace FindDuplicates.Tests.Services;
 
@@ -26,35 +27,7 @@ public class CommandHandlerTests
         public void ShowUsage() => ShowUsageCalled = true;
     }
 
-    // Lightweight generic fake logger that writes messages to Console so existing tests
-    // that capture Console.Out continue to work.
-    private class FakeLogger<T> : ILogger<T>
-    {
-        private class NoopDisposable : IDisposable
-        {
-            public void Dispose() { }
-        }
 
-        // Explicit interface implementation to avoid nullability constraint mismatch warnings.
-        IDisposable ILogger.BeginScope<TState>(TState state) => new NoopDisposable();
-
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        {
-            if (formatter is null) return;
-            var message = formatter(state, exception);
-            // Write simple output that tests expect (contains key phrases).
-            Console.WriteLine(message);
-            if (exception is not null)
-            {
-                Console.WriteLine(exception);
-            }
-        }
-
-        // Provide a public BeginScope forwarding to the explicit implementation for convenience in tests if needed.
-        public IDisposable BeginScope<TState>(TState state) => ((ILogger)this).BeginScope(state);
-    }
 
     [Fact]
     public void HandleCommand_NoArgs_ShowsUsage()
