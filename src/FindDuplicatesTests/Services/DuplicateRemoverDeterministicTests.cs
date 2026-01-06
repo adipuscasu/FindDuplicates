@@ -1,26 +1,10 @@
-﻿using System;
-using System.IO;
-using Xunit;
-using FindDuplicates.Services;
-using Microsoft.Extensions.Logging;
+﻿using FindDuplicates.Services;
+using FindDuplicates.Tests.Helpers;
 
 namespace FindDuplicates.Tests;
 
 public class DuplicateRemoverDeterministicTests
 {
-    // Lightweight fake logger that writes to Console for test visibility.
-    private class FakeLogger<T> : ILogger<T>
-    {
-        private class NoopDisposable : IDisposable { public void Dispose() { } }
-        public IDisposable BeginScope<TState>(TState state) => new NoopDisposable();
-        public bool IsEnabled(LogLevel logLevel) => true;
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        {
-            if (formatter is null) return;
-            Console.WriteLine(formatter(state, exception));
-            if (exception is not null) Console.WriteLine(exception);
-        }
-    }
 
     [Fact]
     public void Execute_KeepsLexicographicallySmallestFile_RemovesOthers()
