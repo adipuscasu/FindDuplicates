@@ -17,12 +17,15 @@ public class DuplicateFinder : IDuplicateFinder
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public Dictionary<string, DuplicateGroup> GetDuplicateGroups(string rootPath)
+    public Dictionary<string, DuplicateGroup> GetDuplicateGroups(
+        string rootPath,
+        IFileFilter? fileFilter = null)
     {
         var fileHashes = new Dictionary<string, DuplicateGroup>();
 
         var files = Directory.EnumerateFiles(rootPath, "*.*", SearchOption.AllDirectories)
             .Where(f => !FileHasher.IsSystemFile(f))
+            .Where(f => fileFilter is null || fileFilter.Matches(f))
             .ToList();
 
         int totalFiles = files.Count;

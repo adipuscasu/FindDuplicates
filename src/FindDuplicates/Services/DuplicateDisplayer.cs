@@ -17,12 +17,12 @@ public class DuplicateDisplayer : IFileProcessor
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public void Execute(string rootPath)
+    public void Execute(string rootPath, IFileFilter? fileFilter = null)
     {
         _logger.LogInformation("Scanning folder: {RootPath}", rootPath);
         _logger.LogInformation("Computing file hashes...");
 
-        var duplicates = _duplicateFinder.GetDuplicateGroups(rootPath);
+        var duplicates = _duplicateFinder.GetDuplicateGroups(rootPath, fileFilter);
 
         if (duplicates.Count == 0)
         {

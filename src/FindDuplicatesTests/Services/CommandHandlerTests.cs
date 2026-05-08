@@ -14,9 +14,11 @@ public class CommandHandlerTests
     private class FakeFinder : IDuplicateFinder
     {
         public string? ReceivedPath { get; private set; }
-        public System.Collections.Generic.Dictionary<string, FindDuplicates.Models.DuplicateGroup> GetDuplicateGroups(string rootPath)
+        public string? ReceivedFilterPath { get; private set; }
+        public System.Collections.Generic.Dictionary<string, FindDuplicates.Models.DuplicateGroup> GetDuplicateGroups(string rootPath, FindDuplicates.Services.IFileFilter? fileFilter = null)
         {
             ReceivedPath = rootPath;
+            ReceivedFilterPath = rootPath;
             return new System.Collections.Generic.Dictionary<string, FindDuplicates.Models.DuplicateGroup>();
         }
     }

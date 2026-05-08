@@ -11,15 +11,30 @@ public class CommandHandler : ICommandHandler
     private readonly Dictionary<string, IFileProcessor> _processors;
     private readonly IUsageDisplay _usageDisplay;
     private readonly ILogger<CommandHandler> _logger;
+    private readonly IFileFilter? _fileFilter;
 
     public CommandHandler(
         DuplicateDisplayer displayProcessor,
         DuplicateRemover removeProcessor,
         IUsageDisplay usageDisplay,
         ILogger<CommandHandler> logger)
+        : this(displayProcessor, removeProcessor, usageDisplay, logger, fileFilter: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance with an optional file filter.
+    /// </summary>
+    public CommandHandler(
+        DuplicateDisplayer displayProcessor,
+        DuplicateRemover removeProcessor,
+        IUsageDisplay usageDisplay,
+        ILogger<CommandHandler> logger,
+        IFileFilter? fileFilter)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _usageDisplay = usageDisplay ?? throw new ArgumentNullException(nameof(usageDisplay));
+        _fileFilter = fileFilter;
 
         _processors = new Dictionary<string, IFileProcessor>(StringComparer.OrdinalIgnoreCase)
         {
@@ -53,6 +68,9 @@ public class CommandHandler : ICommandHandler
             return;
         }
 
+        // Parse --extensions / -e flag from remaining args
+        var fileFilter = ParseExtensionsFlag(args.Skip(1).ToArray(), _logger);
+
         // Only call the remove processor when explicitly requested via flag.
         if (string.Equals(command, "find", StringComparison.OrdinalIgnoreCase))
         {
@@ -69,7 +87,7 @@ public class CommandHandler : ICommandHandler
                     return;
                 }
 
-                removeProcessor.Execute(folderPath);
+                removeProcessor.Execute(folderPath, fileFilter);
                 return;
             }
         }
@@ -81,6 +99,33 @@ public class CommandHandler : ICommandHandler
             return;
         }
 
-        processor.Execute(folderPath);
+        processor.Execute(folderPath, fileFilter);
+    }
+
+    /// <summary>
+    /// Parses --extensions or -e flag from the argument array.
+    /// Returns null if no extension flag is found or if the flag is invalid.
+    /// </summary>
+    internal static IFileFilter? ParseExtensionsFlag(string[] args, ILogger? logger = null)
+    {
+        for (var i = 0; i < args.Length; i++)
+        {
+            var arg = args[i];
+            var lower = arg.ToLowerInvariant();
+
+            if (lower == "--extensions" || lower == "-e")
+            {
+                // Check if the next arg exists and is not a flag
+                if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                {
+                    return ExtensionFileFilter.FromCommaSeparated(args[i + 1]);
+                }
+
+                logger?.LogWarning("Extension flag '{Flag}' requires a value.", arg);
+                return null;
+            }
+        }
+
+        return null;
     }
 }
